@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0a14">
+  <title>دومينو - حاسبة النقاط</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192x192.png" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0a14;
+      --bg-mid: #0d1b2a;
+      --bg-light: #12121f;
+      --blue: #00d4ff;
+      --orange: #ff6b35;
+      --gold: #ffd700;
+      --green: #00c853;
+      --danger: #ff1744;
+      --text: #e0e0e0;
+      --text-dim: #888;
+      --card-bg: rgba(255,255,255,0.05);
+      --card-border: rgba(255,255,255,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-mid) 50%, var(--bg-light) 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 20px rgba(255,215,0,0.3); }
+      50% { box-shadow: 0 0 40px rgba(255,215,0,0.6), 0 0 60px rgba(255,215,0,0.2); }
+    }
+    @keyframes shine {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      70% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    @keyframes ripple {
+      to { transform: scale(4); opacity: 0; }
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+    @keyframes confettiExplode {
+      0% { transform: translate(0,0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+    }
+
+    .screen { display: none; min-height: 100vh; animation: fadeIn 0.4s ease; }
+    .screen.active { display: flex; flex-direction: column; }
+
+    /* Start Screen */
+    #startScreen { align-items: center; justify-content: center; padding: 24px; text-align: center; }
+    .logo-domino {
+      width: 100px; height: 100px;
+      background: linear-gradient(135deg, var(--blue), var(--orange));
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px; font-weight: 800;
+      margin-bottom: 24px;
+      animation: float 3s ease-in-out infinite;
+      box-shadow: 0 10px 40px rgba(0,212,255,0.2);
+    }
+    .app-title {
+      font-size: 2.5rem; font-weight: 800;
+      background: linear-gradient(90deg, var(--blue), var(--orange));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .app-subtitle { color: var(--text-dim); margin-bottom: 32px; font-size: 1rem; }
+
+    .input-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 28px;
+      width: 100%; max-width: 380px;
+      backdrop-filter: blur(10px);
+    }
+    .input-group { margin-bottom: 20px; text-align: right; }
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    .input-group label.blue { color: var(--blue); }
+    .input-group label.orange { color: var(--orange); }
+    .input-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      background: rgba(0,0,0,0.3);
+      color: var(--text);
+      font-family: 'Tajawal', sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-group input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      border: none;
+      background: linear-gradient(135deg, var(--blue), #0099cc);
+      color: #fff;
+      font-family: 'Tajawal', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.1s, box-shadow 0.2s;
+    }
+    .btn-primary:hover { box-shadow: 0 4px 20px rgba(0,212,255,0.3); }
+    .btn-primary:active { transform: scale(0.97); }
+    .ripple {
+      position: absolute; border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      pointer-events: none;
+    }
+
+    /* Game Screen */
+    #gameScreen { padding-bottom: 100px; }
+    .app-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px;
+      background: rgba(10,10,20,0.8);
+      backdrop-filter: blur(10px);
+      position: sticky; top: 0; z-index: 100;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .app-bar-title { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.1rem; }
+    .app-bar-actions { display: flex; gap: 8px; align-items: center; }
+    .icon-btn {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: var(--text);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.1); }
+    .icon-btn:active { transform: scale(0.92); }
+
+    .score-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 20px;
+    }
+    .score-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+    .score-card.winner {
+      border-color: var(--gold);
+      animation: pulseGlow 2s ease-in-out infinite;
+    }
+    .score-card.winner .team-name {
+      background: linear-gradient(90deg, var(--gold), #ffaa00);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .team-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; }
+    .team-score {
+      font-size: 3.5rem; font-weight: 800;
+      line-height: 1;
+      margin-bottom: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+    .score-card.blue .team-score { color: var(--blue); }
+    .score-card.orange .team-score { color: var(--orange); }
+    .win-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(255,215,0,0.15);
+      color: var(--gold);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .progress-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      margin-top: 12px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.6s ease;
+    }
+    .score-card.blue .progress-fill { background: var(--blue); }
+    .score-card.orange .progress-fill { background: var(--orange); }
+
+    .stats-bar {
+      display: flex; justify-content: space-around;
+      padding: 12px 20px;
+      background: rgba(0,0,0,0.2);
+      margin: 0 20px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+    .stats-bar span { color: var(--text); font-weight: 600; }
+
+    .rounds-section { padding: 20px; flex: 1; }
+    .section-title {
+      font-size: 1rem; font-weight: 700;
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-dim);
+    }
+    .empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.5; }
+    .round-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex; align-items: center;
+      justify-content: space-between;
+      animation: fadeIn 0.3s ease;
+    }
+    .round-info { display: flex; align-items: center; gap: 16px; flex: 1; }
+    .round-num {
+      width: 32px; height: 32px;
+      background: rgba(0,212,255,0.1);
+      color: var(--blue);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.85rem;
+    }
+    .round-points { display: flex; gap: 20px; }
+    .round-points span { font-weight: 600; font-size: 1rem; }
+    .round-points .p1 { color: var(--blue); }
+    .round-points .p2 { color: var(--orange); }
+    .round-actions { display: flex; gap: 8px; }
+    .round-actions button {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .round-actions button:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+    .fab {
+      position: fixed;
+      bottom: 24px; left: 24px;
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      border: none;
+      background: var(--green);
+      color: #fff;
+      font-size: 1.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,200,83,0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+      z-index: 90;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .fab:hover { box-shadow: 0 6px 30px rgba(0,200,83,0.5); }
+    .fab:active { transform: scale(0.92); }
+
+    /* History Screen */
+    #historyScreen {
+      position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+      background: var(--bg-dark);
+      z-index: 150;
+      animation: slideInRight 0.3s ease;
+      padding-bottom: 20px;
+      overflow-y: auto;
+    }
+    .history-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--card-border);
+      position: sticky; top: 0;
+      background: rgba(10,10,20,0.95);
+      backdrop-filter: blur(10px);
+      z-index: 10;
+    }
+    .history-title { font-size: 1.1rem; font-weight: 700; flex: 1; }
+    .clear-all-btn {
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--danger);
+      background: rgba(255,23,68,0.1);
+      color: var(--danger);
+      font-family: 'Tajawal', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .clear-all-btn:hover { background: rgba(255,23,68,0.2); }
+
+    .history-list { padding: 16px 20px; }
+    .history-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .history-date {
+      font-size: 0.75rem; color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .history-teams {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .history-team { font-weight: 700; font-size: 1rem; }
+    .history-team.t1 { color: var(--blue); }
+    .history-team.t2 { color: var(--orange); }
+    .history-score { font-weight: 800; font-size: 1.2rem; }
+    .history-winner {
+      color: var(--gold);
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+    .history-meta { font-size: 0.8rem; color: var(--text-dim); }
+    .history-delete {
+      position: absolute; top: 12px; left: 12px;
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .history-delete:hover { background: rgba(255,23,68,0.1); color: var(--danger); }
+
+    /* Win Screen */
+    #winScreen {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(180deg, var(--bg-dark), var(--bg-mid));
+      z-index: 200;
+      display: none;
+      align-items: center; justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 24px;
+    }
+    #winScreen.active { display: flex; }
+    .win-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      animation: float 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 20px rgba(255,215,0,0.5));
+    }
+    .win-title { font-size: 1.5rem; color: var(--text-dim); margin-bottom: 8px; }
+    .winner-name {
+      font-size: 2.5rem; font-weight: 800;
+      background: linear-gradient(90deg, var(--gold), #ffaa00, var(--gold));
+      background-size: 200% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      animation: shine 3s linear infinite;
+      margin-bottom: 16px;
+    }
+    .final-score {
+      font-size: 1.2rem;
+      color: var(--text);
+      margin-bottom: 32px;
+      font-variant-numeric: tabular-nums;
+    }
+    .win-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .win-actions button {
+      padding: 14px 24px;
+      border-radius: 14px;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: var(--text);
+      font-family: 'Tajawal', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .win-actions button:hover { background: rgba(255,255,255,0.1); }
+    .win-actions .btn-gold {
+      background: linear-gradient(135deg, var(--gold), #ffaa00);
+      color: #000;
+      border: none;
+      font-weight: 700;
+    }
+    .win-actions .btn-gold:hover { box-shadow: 0 4px 20px rgba(255,215,0,0.3); }
+
+    /* Confetti */
+    .confetti-container {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none; z-index: 201; overflow: hidden;
+    }
+    .confetti {
+      position: absolute;
+      width: 10px; height: 10px;
+      top: -10px;
+      animation: confettiFall linear forwards;
+    }
+    .confetti.explode {
+      top: 50%; left: 50%;
+      animation: confettiExplode 1s ease-out forwards;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(5px);
+      z-index: 120;
+      display: none; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
+    .modal {
+      background: linear-gradient(180deg, #1a1a2e, #16162a);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 24px;
+      width: 100%; max-width: 360px;
+      animation: slideUp 0.3s ease;
+    }
+    .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; text-align: center; }
+    .modal-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .modal-input-group label {
+      display: block; margin-bottom: 6px;
+      font-size: 0.85rem; font-weight: 500;
+    }
+    .modal-input-group label.blue { color: var(--blue); }
+    .modal-input-group label.orange { color: var(--orange); }
+    .modal-input-group input {
+      width: 100%; padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      background: rgba(0,0,0,0.3);
+      color: var(--text);
+      font-family: 'Tajawal', sans-serif;
+      font-size: 1rem;
+      text-align: center;
+      outline: none;
+    }
+    .modal-input-group input:focus { border-color: var(--blue); }
+    .modal-actions { display: flex; gap: 10px; }
+    .modal-actions button {
+      flex: 1; padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      background: transparent;
+      color: var(--text);
+      font-family: 'Tajawal', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-actions button:hover { background: rgba(255,255,255,0.05); }
+    .modal-actions .btn-save {
+      background: var(--green);
+      color: #fff; border: none;
+    }
+    .modal-actions .btn-save:hover { background: #00b248; }
+
+    /* Toast */
+    .toast-container {
+      position: fixed; bottom: 100px;
+      left: 50%; transform: translateX(-50%);
+      z-index: 300;
+      display: flex; flex-direction: column;
+      gap: 8px; align-items: center;
+    }
+    .toast {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      animation: slideUp 0.3s ease, fadeIn 0.3s ease;
+      backdrop-filter: blur(10px);
+      white-space: nowrap;
+    }
+    .toast.ok { background: rgba(0,200,83,0.2); color: var(--green); border: 1px solid rgba(0,200,83,0.3); }
+    .toast.warn { background: rgba(255,171,0,0.2); color: #ffab00; border: 1px solid rgba(255,171,0,0.3); }
+    .toast.bad { background: rgba(255,23,68,0.2); color: var(--danger); border: 1px solid rgba(255,23,68,0.3); }
+
+    /* Confirm Modal */
+    .confirm-text { text-align: center; color: var(--text-dim); margin-bottom: 20px; font-size: 0.9rem; line-height: 1.6; }
+    .confirm-text strong { color: var(--text); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <!-- Start Screen -->
+  <div id="startScreen" class="screen active">
+    <div class="logo-domino">🁐</div>
+    <h1 class="app-title">دومينو</h1>
+    <p class="app-subtitle">حاسبة النقاط للفريقين</p>
+    <div class="input-card">
+      <div class="input-group">
+        <label class="blue">الفريق الأول</label>
+        <input type="text" id="team1Name" value="الفريق الأول" placeholder="اسم الفريق الأول">
+      </div>
+      <div class="input-group">
+        <label class="orange">الفريق الثاني</label>
+        <input type="text" id="team2Name" value="الفريق الثاني" placeholder="اسم الفريق الثاني">
+      </div>
+      <button class="btn-primary" onclick="startGame(event)">🚀 ابدأ المباراة</button>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="gameScreen" class="screen">
+    <div class="app-bar">
+      <div class="app-bar-title">
+        <span style="font-size:1.4rem;">🁐</span>
+        <span>دومينو</span>
+      </div>
+      <div class="app-bar-actions">
+        <button class="icon-btn" onclick="confirmNextMatch()" title="المباراة التالية">🔄</button>
+        <button class="icon-btn" onclick="confirmNewGameFromBar()" title="بدء جديد">🏠</button>
+        <button class="icon-btn" onclick="openHistory()" title="السجل">📜</button>
+      </div>
+    </div>
+
+    <div class="score-grid">
+      <div class="score-card blue" id="card1">
+        <div class="team-name" id="displayTeam1">الفريق الأول</div>
+        <div class="team-score" id="score1">0</div>
+        <div class="win-badge" id="wins1">🏆 0 فوز</div>
+        <div class="progress-bar"><div class="progress-fill" id="prog1" style="width:0%"></div></div>
+      </div>
+      <div class="score-card orange" id="card2">
+        <div class="team-name" id="displayTeam2">الفريق الثاني</div>
+        <div class="team-score" id="score2">0</div>
+        <div class="win-badge" id="wins2">🏆 0 فوز</div>
+        <div class="progress-bar"><div class="progress-fill" id="prog2" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div>الفريق 1: <span id="stat1">0</span></div>
+      <div>الفريق 2: <span id="stat2">0</span></div>
+      <div>الجولات: <span id="statRounds">0</span></div>
+    </div>
+
+    <div class="rounds-section">
+      <div class="section-title">🎯 الجولات</div>
+      <div id="roundsList">
+        <div class="empty-state">
+          <div class="empty-icon">🎯</div>
+          <div>لم تُلعب أي جولة بعد</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="fab" onclick="openRoundModal()">+</button>
+  </div>
+
+  <!-- History Screen -->
+  <div id="historyScreen" style="display:none;">
+    <div class="history-header">
+      <button class="icon-btn" onclick="closeHistory()">→</button>
+      <div class="history-title">📜 سجل المباريات</div>
+      <button class="clear-all-btn" onclick="clearAllHistory()">🗑️ حذف الكل</button>
+    </div>
+    <div class="history-list" id="historyList">
+      <div class="empty-state">
+        <div class="empty-icon" style="font-size:3rem;">📭</div>
+        <div>لا يوجد سجل بعد</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Win Screen -->
+  <div id="winScreen">
+    <div class="confetti-container" id="confettiContainer"></div>
+    <div class="win-icon">🁐</div>
+    <div class="win-title">مبروك! الفائز هو</div>
+    <div class="winner-name" id="winnerName">-</div>
+    <div class="final-score" id="finalScore">-</div>
+    <div class="win-actions">
+      <button onclick="closeWinScreen()">📋 العودة للجولات</button>
+      <button class="btn-gold" onclick="confirmNextMatch()">🔄 مباراة جديدة</button>
+    </div>
+  </div>
+
+  <!-- Round Modal -->
+  <div class="modal-overlay" id="roundModal">
+    <div class="modal">
+      <div class="modal-title" id="roundModalTitle">إضافة جولة جديدة</div>
+      <div class="modal-inputs">
+        <div class="modal-input-group">
+          <label class="blue" id="modalLabel1">الفريق 1</label>
+          <input type="number" id="roundPoints1" min="0" placeholder="0" onkeydown="if(event.key==='Enter')saveRound()">
+        </div>
+        <div class="modal-input-group">
+          <label class="orange" id="modalLabel2">الفريق 2</label>
+          <input type="number" id="roundPoints2" min="0" placeholder="0" onkeydown="if(event.key==='Enter')saveRound()">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button onclick="closeRoundModal()">إلغاء</button>
+        <button class="btn-save" onclick="saveRound()">💾 حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+      <div class="modal-title" id="confirmTitle">تأكيد</div>
+      <div class="confirm-text" id="confirmText">هل أنت متأكد؟</div>
+      <div class="modal-actions">
+        <button onclick="closeConfirmModal()">إلغاء</button>
+        <button class="btn-save" id="confirmBtn" onclick="confirmAction()">تأكيد</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // ========== STATE ==========
+    const TARGET = 100;
+    const STORAGE_KEY = 'domino_v3';
+    const HISTORY_KEY = 'domino_history';
+
+    let state = {
+      team1: 'الفريق الأول',
+      team2: 'الفريق الثاني',
+      score1: 0,
+      score2: 0,
+      rounds: [],
+      editingRound: null
+    };
+
+    let confirmCallback = null;
+
+    // ========== INIT ==========
+    function init() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          if (data.team1 && data.team2) {
+            state = { ...state, ...data };
+            showScreen('gameScreen');
+            renderAll();
+          }
+        } catch(e) {}
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function getHistory() {
+      try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; } catch(e) { return []; }
+    }
+    function setHistory(h) { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }
+
+    function calcWins(teamName) {
+      return getHistory().filter(m => m.winner === teamName).length;
+    }
+
+    // ========== NAVIGATION ==========
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function startGame(e) {
+      createRipple(e);
+      const t1 = document.getElementById('team1Name').value.trim() || 'الفريق الأول';
+      const t2 = document.getElementById('team2Name').value.trim() || 'الفريق الثاني';
+      state.team1 = t1; state.team2 = t2;
+      state.score1 = 0; state.score2 = 0; state.rounds = [];
+      saveState();
+      showScreen('gameScreen');
+      renderAll();
+      vibrate(50);
+    }
+
+    // ========== RENDER ==========
+    function renderAll() {
+      document.getElementById('displayTeam1').textContent = state.team1;
+      document.getElementById('displayTeam2').textContent = state.team2;
+      document.getElementById('modalLabel1').textContent = state.team1;
+      document.getElementById('modalLabel2').textContent = state.team2;
+
+      animateScore('score1', state.score1);
+      animateScore('score2', state.score2);
+
+      document.getElementById('wins1').innerHTML = '🏆 ' + calcWins(state.team1) + ' فوز';
+      document.getElementById('wins2').innerHTML = '🏆 ' + calcWins(state.team2) + ' فوز';
+
+      document.getElementById('prog1').style.width = Math.min(state.score1 / TARGET * 100, 100) + '%';
+      document.getElementById('prog2').style.width = Math.min(state.score2 / TARGET * 100, 100) + '%';
+
+      document.getElementById('stat1').textContent = state.score1;
+      document.getElementById('stat2').textContent = state.score2;
+      document.getElementById('statRounds').textContent = state.rounds.length;
+
+      const c1 = document.getElementById('card1');
+      const c2 = document.getElementById('card2');
+      c1.classList.toggle('winner', state.score1 >= TARGET);
+      c2.classList.toggle('winner', state.score2 >= TARGET);
+
+      renderRounds();
+    }
+
+    function animateScore(id, value) {
+      const el = document.getElementById(id);
+      const old = parseInt(el.textContent) || 0;
+      if (old !== value) {
+        el.style.animation = 'none';
+        el.offsetHeight; // reflow
+        el.style.animation = 'popIn 0.4s ease';
+        el.textContent = value;
+      }
+    }
+
+    function renderRounds() {
+      const list = document.getElementById('roundsList');
+      if (state.rounds.length === 0) {
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon">🎯</div><div>لم تُلعب أي جولة بعد</div></div>`;
+        return;
+      }
+      list.innerHTML = state.rounds.map((r, i) => `
+        <div class="round-item">
+          <div class="round-info">
+            <div class="round-num">${i + 1}</div>
+            <div class="round-points">
+              <span class="p1">${r.p1}</span>
+              <span style="color:var(--text-dim)">-</span>
+              <span class="p2">${r.p2}</span>
+            </div>
+          </div>
+          <div class="round-actions">
+            <button onclick="editRound(${i})" title="تعديل">✏️</button>
+            <button onclick="deleteRound(${i})" title="حذف">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ========== ROUNDS ==========
+    function openRoundModal() {
+      state.editingRound = null;
+      document.getElementById('roundModalTitle').textContent = 'إضافة جولة جديدة';
+      document.getElementById('roundPoints1').value = '';
+      document.getElementById('roundPoints2').value = '';
+      document.getElementById('roundModal').classList.add('active');
+      setTimeout(() => document.getElementById('roundPoints1').focus(), 100);
+    }
+
+    function editRound(index) {
+      state.editingRound = index;
+      const r = state.rounds[index];
+      document.getElementById('roundModalTitle').textContent = 'تعديل الجولة ' + (index + 1);
+      document.getElementById('roundPoints1').value = r.p1;
+      document.getElementById('roundPoints2').value = r.p2;
+      document.getElementById('roundModal').classList.add('active');
+    }
+
+    function closeRoundModal() {
+      document.getElementById('roundModal').classList.remove('active');
+      state.editingRound = null;
+    }
+
+    function saveRound() {
+      const p1 = parseInt(document.getElementById('roundPoints1').value) || 0;
+      const p2 = parseInt(document.getElementById('roundPoints2').value) || 0;
+      if (p1 < 0 || p2 < 0) { toast('النقاط لا يمكن أن تكون سالبة', 'bad'); return; }
+
+      if (state.editingRound !== null) {
+        const old = state.rounds[state.editingRound];
+        state.score1 = state.score1 - old.p1 + p1;
+        state.score2 = state.score2 - old.p2 + p2;
+        state.rounds[state.editingRound] = { p1, p2 };
+      } else {
+        state.score1 += p1;
+        state.score2 += p2;
+        state.rounds.push({ p1, p2 });
+      }
+
+      saveState();
+      renderAll();
+      closeRoundModal();
+      vibrate(30);
+      toast(state.editingRound !== null ? 'تم تعديل الجولة' : 'تمت إضافة الجولة', 'ok');
+
+      checkWin();
+    }
+
+    function deleteRound(index) {
+      showConfirm('حذف الجولة', 'هل أنت متأكد من حذف هذه الجولة؟', () => {
+        const r = state.rounds[index];
+        state.score1 -= r.p1;
+        state.score2 -= r.p2;
+        state.rounds.splice(index, 1);
+        saveState();
+        renderAll();
+        vibrate(40);
+        toast('تم حذف الجولة', 'warn');
+      });
+    }
+
+    // ========== WIN ==========
+    function checkWin() {
+      if (state.score1 >= TARGET || state.score2 >= TARGET) {
+        const winner = state.score1 >= TARGET ? state.team1 : state.team2;
+        const loser = state.score1 >= TARGET ? state.team2 : state.team1;
+        const wScore = state.score1 >= TARGET ? state.score1 : state.score2;
+        const lScore = state.score1 >= TARGET ? state.score2 : state.score1;
+
+        // Save to history
+        const history = getHistory();
+        history.unshift({
+          id: Date.now(),
+          date: new Date().toLocaleString('ar-SA'),
+          team1: state.team1,
+          team2: state.team2,
+          score1: state.score1,
+          score2: state.score2,
+          winner: winner,
+          rounds: state.rounds.length
+        });
+        setHistory(history);
+
+        document.getElementById('winnerName').textContent = winner;
+        document.getElementById('finalScore').textContent = `${winner} ${wScore} - ${lScore} ${loser}`;
+        document.getElementById('winScreen').classList.add('active');
+        vibrate([100, 50, 100, 50, 200]);
+        launchConfetti();
+      }
+    }
+
+    function closeWinScreen() {
+      document.getElementById('winScreen').classList.remove('active');
+      document.getElementById('confettiContainer').innerHTML = '';
+      renderAll();
+    }
+
+    // ========== HISTORY ==========
+    function openHistory() {
+      const h = getHistory();
+      const list = document.getElementById('historyList');
+      if (h.length === 0) {
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon" style="font-size:3rem;">📭</div><div>لا يوجد سجل بعد</div></div>`;
+      } else {
+        list.innerHTML = h.map(m => `
+          <div class="history-item">
+            <button class="history-delete" onclick="deleteMatch(${m.id})">🗑️</button>
+            <div class="history-date">${m.date}</div>
+            <div class="history-teams">
+              <span class="history-team t1">${m.team1}</span>
+              <span class="history-score">${m.score1} - ${m.score2}</span>
+              <span class="history-team t2">${m.team2}</span>
+            </div>
+            <div class="history-winner">🏆 الفائز: ${m.winner}</div>
+            <div class="history-meta">عدد الجولات: ${m.rounds}</div>
+          </div>
+        `).join('');
+      }
+      document.getElementById('historyScreen').style.display = 'block';
+    }
+
+    function closeHistory() {
+      document.getElementById('historyScreen').style.display = 'none';
+      renderAll();
+    }
+
+    function deleteMatch(id) {
+      showConfirm('حذف المباراة', 'هل أنت متأكد من حذف هذه المباراة من السجل؟', () => {
+        let h = getHistory().filter(m => m.id !== id);
+        setHistory(h);
+        openHistory();
+        toast('تم حذف المباراة', 'warn');
+      });
+    }
+
+    function clearAllHistory() {
+      showConfirm('حذف كل السجل', 'هل أنت متأكد من حذف كل سجل المباريات؟ لا يمكن التراجع.', () => {
+        setHistory([]);
+        openHistory();
+        renderAll();
+        toast('تم حذف كل السجل', 'ok');
+      });
+    }
+
+    // ========== NEW TOOLBAR ACTIONS ==========
+    function confirmNextMatch() {
+      showConfirm('المباراة التالية', 'هل تريد بدء مباراة جديدة بنفس الفرق <strong>' + state.team1 + '</strong> و <strong>' + state.team2 + '</strong>؟<br><br>سيتم حفظ النتيجة الحالية في السجل.', () => {
+        // Save current match to history if not already saved (win screen saves it, but if user clicks before win, save manually)
+        if (state.rounds.length > 0 && state.score1 < TARGET && state.score2 < TARGET) {
+          const history = getHistory();
+          history.unshift({
+            id: Date.now(),
+            date: new Date().toLocaleString('ar-SA'),
+            team1: state.team1,
+            team2: state.team2,
+            score1: state.score1,
+            score2: state.score2,
+            winner: state.score1 > state.score2 ? state.team1 : (state.score2 > state.score1 ? state.team2 : 'تعادل'),
+            rounds: state.rounds.length
+          });
+          setHistory(history);
+        }
+        newGameSameTeams();
+      });
+    }
+
+    function confirmNewGameFromBar() {
+      showConfirm('بدء لعبة جديدة', 'هل تريد العودة لشاشة البداية وبدء لعبة جديدة من الصفر؟<br><br>سيتم حفظ النتيجة الحالية في السجل ثم مسح كل شيء.', () => {
+        // Save current match to history if there are rounds
+        if (state.rounds.length > 0) {
+          const history = getHistory();
+          history.unshift({
+            id: Date.now(),
+            date: new Date().toLocaleString('ar-SA'),
+            team1: state.team1,
+            team2: state.team2,
+            score1: state.score1,
+            score2: state.score2,
+            winner: state.score1 > state.score2 ? state.team1 : (state.score2 > state.score1 ? state.team2 : 'تعادل'),
+            rounds: state.rounds.length
+          });
+          setHistory(history);
+        }
+        // Reset everything and go to start screen
+        localStorage.removeItem(STORAGE_KEY);
+        state = { team1: 'الفريق الأول', team2: 'الفريق الثاني', score1: 0, score2: 0, rounds: [] };
+        document.getElementById('team1Name').value = 'الفريق الأول';
+        document.getElementById('team2Name').value = 'الفريق الثاني';
+        closeWinScreen();
+        showScreen('startScreen');
+        toast('يمكنك الآن تسمية الفرق من جديد', 'ok');
+      });
+    }
+
+    function newGameSameTeams() {
+      state.score1 = 0; state.score2 = 0; state.rounds = [];
+      saveState();
+      closeWinScreen();
+      showScreen('gameScreen');
+      renderAll();
+      toast('بدأت مباراة جديدة', 'ok');
+    }
+
+    // ========== CONFIRM ==========
+    function showConfirm(title, text, callback) {
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmText').innerHTML = text;
+      confirmCallback = callback;
+      document.getElementById('confirmModal').classList.add('active');
+    }
+    function closeConfirmModal() {
+      document.getElementById('confirmModal').classList.remove('active');
+      confirmCallback = null;
+    }
+    function confirmAction() {
+      if (confirmCallback) confirmCallback();
+      closeConfirmModal();
+    }
+
+    // ========== TOAST ==========
+    function toast(msg, type = 'ok') {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = 'toast ' + type;
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    // ========== EFFECTS ==========
+    function createRipple(e) {
+      const btn = e.currentTarget;
+      const circle = document.createElement('span');
+      const d = Math.max(btn.clientWidth, btn.clientHeight);
+      circle.style.width = circle.style.height = d + 'px';
+      circle.style.left = (e.clientX - btn.getBoundingClientRect().left - d/2) + 'px';
+      circle.style.top = (e.clientY - btn.getBoundingClientRect().top - d/2) + 'px';
+      circle.classList.add('ripple');
+      btn.appendChild(circle);
+      setTimeout(() => circle.remove(), 600);
+    }
+
+    function vibrate(pattern) {
+      if (navigator.vibrate) navigator.vibrate(pattern);
+    }
+
+    function launchConfetti() {
+      const container = document.getElementById('confettiContainer');
+      const colors = ['#00d4ff', '#ff6b35', '#ffd700', '#00c853', '#ff1744', '#aa00ff', '#ffea00'];
+      // Fall confetti
+      for (let i = 0; i < 100; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = Math.random() * 100 + '%';
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.animationDuration = (2 + Math.random() * 3) + 's';
+        c.style.animationDelay = (Math.random() * 2) + 's';
+        c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        c.style.width = (6 + Math.random() * 8) + 'px';
+        c.style.height = (6 + Math.random() * 8) + 'px';
+        container.appendChild(c);
+      }
+      // Explode confetti
+      for (let i = 0; i < 80; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti explode';
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 100 + Math.random() * 300;
+        c.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+        c.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+        c.style.animationDuration = (0.8 + Math.random() * 0.6) + 's';
+        c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        container.appendChild(c);
+      }
+    }
+
+    // ========== KEYBOARD ==========
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeRoundModal();
+        closeConfirmModal();
+        if (document.getElementById('historyScreen').style.display === 'block') closeHistory();
+      }
+    });
+
+    // ========== SERVICE WORKER ==========
+    
+    // Init
+    init();
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then((reg) => console.log('SW registered:', reg.scope))
+          .catch((err) => console.log('SW registration failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>
